@@ -12,6 +12,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.TestRestTemplate;
@@ -22,15 +23,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.MultiValueMap;
 
 import com.wang.utils.crypto.DES3;
 
 //import com.htche.security.authentication.filter.EnhancedBasicAuthenticationFilter.IEncryptionManager;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 @IntegrationTest({ "server.port:0", "authentication.filter.captcha:false",
 		"authentication.filter.captcha.minAcceptedWordLength:1",
 		"authentication.filter.captcha.maxAcceptedWordLength:1", "authentication.filter.captcha.randomWords:0" })
+@WebAppConfiguration
+@DirtiesContext
 public abstract class IntegrationTestBase {
 	@Value("${authentication.filter.enhanced_basic:true}") boolean enhancedBasic;
 
@@ -40,13 +47,9 @@ public abstract class IntegrationTestBase {
 		return DES3.encrypt("default_key", str);
 	}
 
-	public String getUsername() {
-		return "user";
-	}
+	public abstract String getUsername();
 
-	public String getPassword() {
-		return "user";
-	}
+	public abstract String getPassword();
 
 	public boolean getEnhancedBasic() {
 		return enhancedBasic;
@@ -193,7 +196,8 @@ public abstract class IntegrationTestBase {
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> get(String url) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.GET, getHttpEntity(), String.class, false);
+		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.GET, getHttpEntity(), String.class,
+				false);
 	}
 
 	protected <T> ResponseEntity<T> get(String url, Class<T> returnType) throws Exception {
@@ -223,8 +227,8 @@ public abstract class IntegrationTestBase {
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form),
-				String.class, true);
+		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form), String.class,
+				true);
 	}
 
 	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form, Class<T> returnType)

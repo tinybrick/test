@@ -30,9 +30,13 @@ public abstract class ControllerTestBase {
 	@Autowired protected WebApplicationContext webApplicationContext;
 	@Autowired protected MockHttpSession session;
 
-	public abstract String getUsername();
+	public String getUsername() {
+		return "user";
+	}
 
-	public abstract String getPassword();
+	public String getPassword() {
+		return "user";
+	}
 
 	protected MockMvc mockMvc;
 	protected HttpHeaders httpHeaders = new HttpHeaders();
@@ -65,11 +69,12 @@ public abstract class ControllerTestBase {
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
-	
-	protected ResultActions POSTByParams(String url, MediaType contentType, MediaType accept, Map<String, Object> params)
-			throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(contentType).headers(httpHeaders).accept(accept);
-		for(String key : params.keySet()){
+
+	protected ResultActions POSTByParams(String url, MediaType contentType, MediaType accept,
+			Map<String, Object> params) throws Exception {
+		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(contentType)
+				.headers(httpHeaders).accept(accept);
+		for (String key : params.keySet()) {
 			requestBuilder.param(key, params.get(key).toString());
 		}
 		ResultActions result = mockMvc.perform(requestBuilder);
