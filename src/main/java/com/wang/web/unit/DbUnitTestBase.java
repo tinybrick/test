@@ -15,4 +15,5 @@ import com.github.springtestdbunit.TransactionDbUnitTestExecutionListener;
 @EnableTransactionManagement
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class, DirtiesContextTestExecutionListener.class,
 		TransactionDbUnitTestExecutionListener.class })
+//@Transactional
 public abstract class DbUnitTestBase {}
