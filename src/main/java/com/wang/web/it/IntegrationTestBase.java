@@ -3,6 +3,7 @@ package com.wang.web.it;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -28,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.MultiValueMap;
 
-import com.wang.utils.crypto.DES3;
+import com.wang.utils.crypto.Codec;
 
 //import com.htche.security.authentication.filter.EnhancedBasicAuthenticationFilter.IEncryptionManager;
 
@@ -41,10 +42,8 @@ import com.wang.utils.crypto.DES3;
 public abstract class IntegrationTestBase {
 	@Value("${authentication.filter.enhanced_basic:true}") boolean enhancedBasic;
 
-	//@Autowired(required = false) IEncryptionManager encryptionManager;
-
 	public String encrypt(String str) throws Exception {
-		return DES3.encrypt("default_key", str);
+		return Codec.stringToBase64(str);
 	}
 
 	public abstract String getUsername();
@@ -53,6 +52,10 @@ public abstract class IntegrationTestBase {
 
 	public boolean getEnhancedBasic() {
 		return enhancedBasic;
+	}
+
+	public void setEnhancedBasic(boolean enabled) {
+		enhancedBasic = enabled;
 	}
 
 	/**
@@ -91,7 +94,7 @@ public abstract class IntegrationTestBase {
 	 */
 	protected TestRestTemplate getRestTemplate() {
 		TestRestTemplate testRestTemplate = null;
-		if (getEnhancedBasic()) {
+		if (getEnhancedBasic() || null == getUsername() || null == getPassword()) {
 			testRestTemplate = new TestRestTemplate();
 		}
 		else {
@@ -107,23 +110,15 @@ public abstract class IntegrationTestBase {
 	 */
 	private HttpEntity<Void> getHttpEntity() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
-		if (getEnhancedBasic()) {
+		if (getEnhancedBasic() && null != getUsername() && null != getPassword()) {
 			headers.add("Authorization", "Basic " + encrypt(getUsername() + ":" + getPassword()));
 		}
 		return new HttpEntity<Void>(headers);
 	}
 
-	private HttpHeaders getHttpHeaders() throws Exception {
-		HttpHeaders headers = new HttpHeaders();
-		if (getEnhancedBasic()) {
-			headers.add("Authorization", "Basic " + encrypt(getUsername() + ":" + getPassword()));
-		}
-		return headers;
-	}
-
 	private HttpEntity<?> getHttpEntity(MultiValueMap<String, String> form) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
-		if (getEnhancedBasic()) {
+		if (getEnhancedBasic() && null != getUsername() && null != getPassword()) {
 			headers.add("Authorization", "Basic " + encrypt(getUsername() + ":" + getPassword()));
 		}
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -164,14 +159,29 @@ public abstract class IntegrationTestBase {
 	 * @return
 	 */
 	protected <T> ResponseEntity<T> request(TestRestTemplate testRestTemplate, String url, HttpMethod method,
-			HttpEntity<?> requestEntity, Class<T> returnType, boolean redirect) {
+			HttpEntity<?> requestEntity, MediaType contentType, List<MediaType> acceptableMediaTypes,
+			Class<T> returnType, boolean redirect) {
+		HttpHeaders requestHeaders = new HttpHeaders();
+
+		if (null != requestEntity)
+			requestHeaders.putAll(requestEntity.getHeaders());
+
+		if (0 == requestHeaders.getAccept().size()) {
+			requestHeaders.setAccept(acceptableMediaTypes);
+		}
+		if (null == requestHeaders.getContentType() && contentType != MediaType.ALL) {
+			requestHeaders.setContentType(contentType);
+		}
+
+		requestEntity = new HttpEntity<Object>(null == requestEntity ? null : requestEntity.getBody(), requestHeaders);
+
 		ResponseEntity<T> responseEntity = testRestTemplate.exchange(url, method, requestEntity, returnType);
 
 		if (responseEntity.getStatusCode().equals(HttpStatus.FOUND)) {
 			if (redirect) {
 				String location = null;
-				HttpHeaders requestHeaders = new HttpHeaders();
-				requestHeaders.putAll(requestEntity.getHeaders());//new HttpHeaders();
+				//requestHeaders = new HttpHeaders();
+				//requestHeaders.putAll(requestEntity.getHeaders());
 				HttpHeaders responseHeaders = responseEntity.getHeaders();
 				Iterator<Entry<String, List<String>>> items = responseHeaders.entrySet().iterator();
 				while (items.hasNext()) {
@@ -186,8 +196,8 @@ public abstract class IntegrationTestBase {
 
 				if (null != location) {
 					requestEntity = new HttpEntity<Object>(requestEntity.getBody(), requestHeaders);
-					responseEntity = request(testRestTemplate, location, HttpMethod.GET, requestEntity, returnType,
-							redirect);
+					responseEntity = request(testRestTemplate, location, HttpMethod.GET, requestEntity, contentType,
+							acceptableMediaTypes, returnType, redirect);
 				}
 			}
 		}
@@ -196,65 +206,103 @@ public abstract class IntegrationTestBase {
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> get(String url) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.GET, getHttpEntity(), String.class,
-				false);
+		return (ResponseEntity<T>) get(url, String.class);
 	}
 
 	protected <T> ResponseEntity<T> get(String url, Class<T> returnType) throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.GET, new HttpEntity<Void>(getHttpHeaders()), returnType,
-				false);
+		return get(url, returnType, true);
 	}
 
 	protected <T> ResponseEntity<T> get(String url, Class<T> returnType, boolean redirect) throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.GET, getHttpEntity(), returnType, redirect);
+		return get(url, MediaType.ALL, Arrays.asList(MediaType.ALL), returnType, redirect);
+	}
+
+	protected <T> ResponseEntity<T> get(String url, MediaType contentType, List<MediaType> acceptableMediaTypes,
+			Class<T> returnType) throws Exception {
+		return get(url, contentType, acceptableMediaTypes, returnType, true);
+	}
+
+	protected <T> ResponseEntity<T> get(String url, MediaType contentType, List<MediaType> acceptableMediaTypes,
+			Class<T> returnType, boolean redirect) throws Exception {
+		return request(getRestTemplate(), url, HttpMethod.GET, getHttpEntity(), contentType, acceptableMediaTypes,
+				returnType, redirect);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> post(String url, MultiValueMap<String, String> form) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.POST, getHttpEntity(form), String.class,
-				true);
+		return (ResponseEntity<T>) post(url, form, String.class, true);
 	}
 
 	protected <T> ResponseEntity<T> post(String url, MultiValueMap<String, String> form, Class<T> returnType)
 			throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.POST, getHttpEntity(form), returnType, true);
+		return post(url, form, returnType, true);
 	}
 
 	protected <T> ResponseEntity<T> post(String url, MultiValueMap<String, String> form, Class<T> returnType,
 			boolean redirect) throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.POST, getHttpEntity(form), returnType, redirect);
+		return post(url, form, MediaType.ALL, Arrays.asList(MediaType.ALL), returnType, redirect);
+	}
+
+	protected <T> ResponseEntity<T> post(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType) throws Exception {
+		return post(url, form, contentType, acceptableMediaTypes, returnType, true);
+	}
+
+	protected <T> ResponseEntity<T> post(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType, boolean redirect) throws Exception {
+		return request(getRestTemplate(), url, HttpMethod.POST, getHttpEntity(form), contentType, acceptableMediaTypes,
+				returnType, redirect);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form), String.class,
-				true);
+		return (ResponseEntity<T>) delete(url, form, String.class, true);
 	}
 
 	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form, Class<T> returnType)
 			throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form), returnType, true);
+		return delete(url, form, returnType, true);
 	}
 
 	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form, Class<T> returnType,
 			boolean redirect) throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form), returnType, redirect);
+		return delete(url, form, MediaType.ALL, Arrays.asList(MediaType.ALL), returnType, redirect);
+	}
+
+	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType) throws Exception {
+		return delete(url, form, contentType, acceptableMediaTypes, returnType, true);
+	}
+
+	protected <T> ResponseEntity<T> delete(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType, boolean redirect) throws Exception {
+		return request(getRestTemplate(), url, HttpMethod.DELETE, getHttpEntity(form), contentType,
+				acceptableMediaTypes, returnType, redirect);
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> put(String url, MultiValueMap<String, String> form) throws Exception {
-		return (ResponseEntity<T>) request(getRestTemplate(), url, HttpMethod.PUT, getHttpEntity(form), String.class,
-				true);
+		return (ResponseEntity<T>) put(url, form, String.class, true);
 	}
 
 	protected <T> ResponseEntity<T> put(String url, MultiValueMap<String, String> form, Class<T> returnType)
 			throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.PUT, getHttpEntity(form), returnType, true);
+		return put(url, form, returnType, true);
 	}
 
 	protected <T> ResponseEntity<T> put(String url, MultiValueMap<String, String> form, Class<T> returnType,
 			boolean redirect) throws Exception {
-		return request(getRestTemplate(), url, HttpMethod.PUT, getHttpEntity(form), returnType, redirect);
+		return put(url, form, MediaType.ALL, Arrays.asList(MediaType.ALL), returnType, redirect);
 	}
 
+	protected <T> ResponseEntity<T> put(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType) throws Exception {
+		return put(url, form, contentType, acceptableMediaTypes, returnType, true);
+	}
+
+	protected <T> ResponseEntity<T> put(String url, MultiValueMap<String, String> form, MediaType contentType,
+			List<MediaType> acceptableMediaTypes, Class<T> returnType, boolean redirect) throws Exception {
+		return request(getRestTemplate(), url, HttpMethod.PUT, getHttpEntity(form), contentType, acceptableMediaTypes,
+				returnType, redirect);
+	}
 }
