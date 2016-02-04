@@ -18,7 +18,8 @@ import com.wang.utils.rest.RestClient;
 @WebAppConfiguration
 @DirtiesContext
 public abstract class IntegrationTestBase extends RestClient {
-	@Value("${authentication.filter.enhanced_basic:true}") boolean enhancedBasic;
+	public @Value("${local.server.port:0}") int port;
+	public @Value("${authentication.filter.enhanced_basic:true}") boolean enhancedBasic;
 
 	protected boolean getEnhancedBasic() {
 		return enhancedBasic;
