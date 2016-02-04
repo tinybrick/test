@@ -7,6 +7,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.wang.utils.rest.RestClient;
+
 //import com.htche.security.authentication.filter.EnhancedBasicAuthenticationFilter.IEncryptionManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -18,7 +20,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public abstract class IntegrationTestBase extends RestClient {
 	@Value("${authentication.filter.enhanced_basic:true}") boolean enhancedBasic;
 
-	public boolean getEnhancedBasic() {
+	protected boolean getEnhancedBasic() {
 		return enhancedBasic;
 	}
 }
