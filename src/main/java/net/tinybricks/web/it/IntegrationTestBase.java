@@ -1,4 +1,4 @@
-package com.wang.web.it;
+package net.tinybricks.web.it;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;

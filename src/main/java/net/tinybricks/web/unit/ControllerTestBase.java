@@ -1,4 +1,4 @@
-package com.wang.web.unit;
+package net.tinybricks.web.unit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
