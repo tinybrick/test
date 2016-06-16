@@ -7,7 +7,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.wang.utils.rest.RestClient;
+import net.tinybrick.utils.rest.RestClient;
 
 //import com.htche.security.authentication.filter.EnhancedBasicAuthenticationFilter.IEncryptionManager;
 
