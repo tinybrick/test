@@ -1,4 +1,4 @@
-package net.tinybricks.web.unit;
+package net.tinybrick.test.web.unit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
