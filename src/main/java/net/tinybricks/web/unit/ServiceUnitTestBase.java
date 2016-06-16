@@ -1,4 +1,4 @@
-package com.wang.web.unit;
+package net.tinybricks.web.unit;
 
 import org.junit.runner.RunWith;
 import org.springframework.test.annotation.DirtiesContext;

@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.wang</groupId>
+  <groupId>net.tinybricks</groupId>
   <artifactId>test</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   
@@ -19,8 +19,8 @@
 	</properties>
 	
 	<scm>
-	    <connection>scm:git:https://github.com/meee55/test.git</connection>
-	    <developerConnection>scm:git:https://github.com/meee55/test.git</developerConnection>
+	    <connection>scm:git:https://github.com/jeffwji/test.git</connection>
+	    <developerConnection>scm:git:https://github.com/jeffwji/test.git</developerConnection>
 	</scm>
 
 	<!-- <repositories>
@@ -255,13 +255,19 @@
 			<artifactId>spring-beans</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>com.wang</groupId>
 		    <artifactId>utils</artifactId>
