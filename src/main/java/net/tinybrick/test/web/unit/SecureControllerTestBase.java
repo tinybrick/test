@@ -1,4 +1,4 @@
-package net.tinybricks.web.unit;
+package net.tinybrick.test.web.unit;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
