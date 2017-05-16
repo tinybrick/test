@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import com.alibaba.fastjson.JSONObject;
 
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -63,7 +62,7 @@ public abstract class ControllerTestBase {
 
 	protected ResultActions POST(String url, MediaType contentType, MediaType accept, Map<String, Object> content)
 			throws Exception {
-		String contentStr = JSONObject.toJSONString(content);
+		String contentStr = JSONObject.valueToString(content);
 		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(contentType)
 				.content(contentStr).headers(httpHeaders).accept(accept);
 		ResultActions result = mockMvc.perform(requestBuilder);

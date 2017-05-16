@@ -14,7 +14,7 @@
 		<junit.version>4.11</junit.version>
 		<dbunit.version>2.5.1</dbunit.version>
 		<spring.version>4.2.3.RELEASE</spring.version>
-		<spring.boot.version>1.3.0.RELEASE</spring.boot.version>
+		<spring.boot.version>1.3.8.RELEASE</spring.boot.version>
 		<utils.version>2.0.2-SNAPSHOT</utils.version>
 	</properties>
 	
