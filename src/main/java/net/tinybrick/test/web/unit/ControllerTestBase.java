@@ -2,6 +2,7 @@ package net.tinybrick.test.web.unit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import java.util.Map;
 
@@ -25,6 +26,9 @@ import org.springframework.web.context.WebApplicationContext;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public abstract class ControllerTestBase {
+	public static enum POST_DATA_POSITION{
+		HEADER, BODY
+	}
 
 	@Autowired protected WebApplicationContext webApplicationContext;
 	@Autowired protected MockHttpSession session;
@@ -47,34 +51,89 @@ public abstract class ControllerTestBase {
 		mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 	}
 
-	protected ResultActions GET(String url, MediaType content, MediaType accept) throws Exception {
+	// GET
+	public ResultActions GET(String url, MediaType content, MediaType accept) throws Exception {
 		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content).accept(accept);
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
 
-	protected ResultActions POST(String url, MediaType content, MediaType accept) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(content)
-				.headers(httpHeaders).accept(accept);
+	// DELETE
+	public ResultActions DELETE(String url, MediaType content, MediaType accept) throws Exception {
+		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content).accept(accept);
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
 
-	protected ResultActions POST(String url, MediaType contentType, MediaType accept, Map<String, Object> content)
+	// POST
+	public ResultActions POST(String url, MediaType contentType, MediaType accept) throws Exception {
+		return POST(url, contentType, accept, null);
+	}
+
+	public ResultActions POST(String url,
+								 MediaType contentType,
+								 MediaType accept,
+								 Map<String, Object> content) throws Exception {
+		return POST(url, contentType, accept, content, POST_DATA_POSITION.BODY);
+	}
+
+	public ResultActions POST(String url,
+										 MediaType contentType,
+										 MediaType accept,
+										 Map<String, Object> content,
+										 POST_DATA_POSITION position)
 			throws Exception {
-		String contentStr = JSONObject.valueToString(content);
 		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(contentType)
-				.content(contentStr).headers(httpHeaders).accept(accept);
+				.headers(httpHeaders).accept(accept);
+		if(null != content) {
+			if(position == POST_DATA_POSITION.BODY) {
+				String contentStr = JSONObject.valueToString(content);
+				requestBuilder.content(contentStr);
+			}
+			else if(position == POST_DATA_POSITION.HEADER){
+				for (String key : content.keySet()) {
+					requestBuilder.param(key, content.get(key).toString());
+				}
+			}
+			else
+				throw new UnsupportedOperationException("You can't put data at here");
+		}
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
 
-	protected ResultActions POSTByParams(String url, MediaType contentType, MediaType accept,
-			Map<String, Object> params) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = post(url).session(session).contentType(contentType)
+	// PUT
+	public ResultActions PUT(String url, MediaType contentType, MediaType accept) throws Exception {
+		return PUT(url, contentType, accept, null);
+	}
+
+	public ResultActions PUT(String url,
+								 MediaType contentType,
+								 MediaType accept,
+								 Map<String, Object> content) throws Exception {
+		return PUT(url, contentType, accept, content, POST_DATA_POSITION.BODY);
+	}
+
+	public ResultActions PUT(String url,
+								 MediaType contentType,
+								 MediaType accept,
+								 Map<String, Object> content,
+								 POST_DATA_POSITION position)
+			throws Exception {
+		MockHttpServletRequestBuilder requestBuilder = put(url).session(session).contentType(contentType)
 				.headers(httpHeaders).accept(accept);
-		for (String key : params.keySet()) {
-			requestBuilder.param(key, params.get(key).toString());
+		if(null != content) {
+			if(position == POST_DATA_POSITION.BODY) {
+				String contentStr = JSONObject.valueToString(content);
+				requestBuilder.content(contentStr);
+			}
+			else if(position == POST_DATA_POSITION.HEADER){
+				for (String key : content.keySet()) {
+					requestBuilder.param(key, content.get(key).toString());
+				}
+			}
+			else
+				throw new UnsupportedOperationException("You can't put data at here");
 		}
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
