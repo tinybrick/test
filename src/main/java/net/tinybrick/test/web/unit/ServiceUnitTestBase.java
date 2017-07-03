@@ -7,5 +7,5 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration
+//@WebAppConfiguration
 public abstract class ServiceUnitTestBase {}
