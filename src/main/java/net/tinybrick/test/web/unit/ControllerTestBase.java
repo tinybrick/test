@@ -1,11 +1,5 @@
 package net.tinybrick.test.web.unit;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -21,6 +15,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Map;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @DirtiesContext
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -53,14 +51,16 @@ public abstract class ControllerTestBase {
 
 	// GET
 	public ResultActions GET(String url, MediaType content, MediaType accept) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content).accept(accept);
+		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content)
+				.headers(this.httpHeaders).accept(accept);
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
 
 	// DELETE
 	public ResultActions DELETE(String url, MediaType content, MediaType accept) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content).accept(accept);
+		MockHttpServletRequestBuilder requestBuilder = get(url).session(session).contentType(content)
+				.headers(this.httpHeaders).accept(accept);
 		ResultActions result = mockMvc.perform(requestBuilder);
 		return result;
 	}
