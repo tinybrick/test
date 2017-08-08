@@ -87,7 +87,7 @@ public abstract class ControllerTestBase {
 				.headers(httpHeaders).accept(accept);
 		if(null != content) {
 			if(position == POST_DATA_POSITION.BODY) {
-				String contentStr = JSONObject.valueToString(content);
+				String contentStr = new JSONObject(content).toString();
 				requestBuilder.content(contentStr);
 			}
 			else if(position == POST_DATA_POSITION.HEADER){
@@ -124,7 +124,7 @@ public abstract class ControllerTestBase {
 				.headers(httpHeaders).accept(accept);
 		if(null != content) {
 			if(position == POST_DATA_POSITION.BODY) {
-				String contentStr = JSONObject.valueToString(content);
+				String contentStr = new JSONObject(content).toString();
 				requestBuilder.content(contentStr);
 			}
 			else if(position == POST_DATA_POSITION.HEADER){
